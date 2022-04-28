@@ -104,3 +104,13 @@ To verify the installation, you can grab a component from the mining list and ru
 
 
 The scanning results will include matches to the mined component.
+
+
+## Docker-compose
+
+We also added a docker-compose definition of the SCANOSS service to ease disk space configurations. 
+
+Make sure to replace /data dir with big volumes.
+
+Use ```docker-compose up```as usual tTo run the composition.
+
