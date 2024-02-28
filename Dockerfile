@@ -3,64 +3,72 @@ FROM debian:stable
 RUN \
   DEBIAN_FRONTEND=noninteractive \
     apt update && apt install --assume-yes --no-install-recommends \
-      build-essential \
-      curl \
-      git \
-      libssl-dev \
+      build-essential \ 
       zlib1g-dev \
-      unrar-free \
-      #minr deps
-      man make gcc libssl-dev zipmerge vim bc net-tools rsync zip p7zip-full byobu libxslt1.1 \
-      php-cli unzip strace tmux valgrind ntpdate xz-utils ruby python3-pip python3-venv parted \
-      xxd hexcurse ntpdate jq nload \
-      #extra
+      libgcrypt-dev \
+      curl \
+      bc \
+      git \
       ca-certificates \
-      openssl \
-      wget \
+      # Engine
+      # openssl-dev \
   && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /scanoss/
-
-RUN git clone https://github.com/scanoss/ldb.git && \
-    cd ldb && \
+# Engine dependencies
+# libsodium
+RUN curl -O https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz && \
+    tar -xzvf libsodium-1.0.18-stable.tar.gz && \
+    cd libsodium-stable && \
+    ./configure && \
     make && \
+    make check && \
     make install && \
-    mkdir /var/lib/ldb
+    ldconfig
 
+# libssl
+RUN curl -O http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1n-0+deb11u5_amd64.deb && \
+    dpkg -i libssl1.1_1.1.1n-0+deb11u5_amd64.deb
 
-# Install miner
-RUN git clone https://github.com/scanoss/minr.git && \
-    cd minr && \
-    make && \
-    make install
+WORKDIR /scanoss/ldb/
 
-RUN echo $(minr -v)
+COPY . .
+
+ENV SUDO_USER=root
+
+# Install ldb
+RUN export LDB_PKG_URL=$(curl -s https://api.github.com/repos/scanoss/ldb/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep deb) && \
+    export LDB_PKG=$(basename ${LDB_PKG_URL}) && \
+    curl -LO $LDB_PKG_URL && \
+    dpkg -i $LDB_PKG
+
 
 # Install engine
 
 WORKDIR /scanoss/engine/
 
-RUN git clone https://github.com/scanoss/engine.git && \
-    cd engine && \
-    make && \
-    make install
+RUN export ENGINE_PKG_URL=$(curl -s https://api.github.com/repos/scanoss/engine/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep deb) && \
+    export ENGINE_PKG=$(basename ${ENGINE_PKG_URL}) && \
+    curl -LO $ENGINE_PKG_URL && \
+    dpkg -i $ENGINE_PKG 
 
-RUN echo $(scanoss -v)
+# Install API
 
-WORKDIR /scanoss/KB
+WORKDIR /scanoss/api
 
-# Sample URL mining
+RUN useradd --system scanoss
 
-COPY ./mining_commands.sh mining_commands.sh
+RUN export API_PKG_URL=$(curl -s https://api.github.com/repos/scanoss/api.go/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep amd64 | grep tgz) && \
+    export API_PKG=$(basename ${API_PKG_URL}) && \
+    curl -LO $API_PKG_URL && \
+    tar -xzvf $API_PKG
 
-RUN git clone https://github.com/scanoss/wayuu.git && \
-    cd wayuu && \
-    make && \
-    make install
+RUN mkdir -p /var/lib/ldb/ && \
+    mkdir -p /usr/local/etc/scanoss
 
-RUN git clone https://github.com/scanoss/API.git && \
-    cd API && \
-    make && \
-    make install
+COPY ./scripts/* /scanoss/api/scripts/
 
-ENTRYPOINT ["/usr/bin/scanoss-api", "-d", "-f", "-b", "0.0.0.0"]
+
+RUN cd /scanoss/api/scripts/ && \
+    ./env-setup.sh prod -y
+
+ENTRYPOINT ["bash","-c","/usr/local/bin/scanoss-go-api.sh"]
