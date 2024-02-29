@@ -1,4 +1,6 @@
-# SCANOSS Containerized Environment
+# SCANOSS Engine
+
+A containerized environment for the SCANOSS Platform
 
 ## Introduction
 
@@ -12,22 +14,32 @@ The SCANOSS Platform can be easily deployed as a Docker container, comprising es
 
 To initiate SCANOSS using the sample Knowledge Base [test-kb](https://github.com/scanoss/test-kb), follow these steps:
 
-1. Clone this repository and execute the `start.sh` script.
+1. Clone this repository
 
     ```sh
     git clone https://github.com/scanoss/scanoss-engine
+    ```
+
+2.  Execute the `start.sh` script. This script pulls our test Knowledge Base (~40GB uncompressed) containing example components and starts the SCANOSS container. 
+    
+    ```sh
     cd scanoss-engine/
     ./start.sh
     ```
+    
+    Notes:
+    - The example KB will be downloaded in the `./ldb` folder and the download will be skipped if the `ldb` folder exists. 
+    - The API is configured to listen on port 5443. 
+    - Please review the script for further reference.
 
-    This script pulls a test Knowledge Base containing several example components and starts the SCANOSS container. The API is configured to listen on port 5443.
-
-2. Test your environment by running a scan request using the [Python CLI](https://github.com/scanoss/scanoss.py):
+3. Test your environment by running a scan request using the [Python CLI](https://github.com/scanoss/scanoss.py):
 
     ```sh
     curl -LO https://github.com/madler/zlib/raw/master/inflate.c
     scanoss-py scan --apiurl http://localhost:5443/api/scan/direct inflate.c 
     ```
+
+    If the scan was successfull, you will receive the match output.
 
 ## Customization
 

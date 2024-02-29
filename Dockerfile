@@ -10,8 +10,6 @@ RUN \
       bc \
       git \
       ca-certificates \
-      # Engine
-      # openssl-dev \
   && rm -rf /var/lib/apt/lists/*
 
 # Engine dependencies
@@ -66,7 +64,6 @@ RUN mkdir -p /var/lib/ldb/ && \
     mkdir -p /usr/local/etc/scanoss
 
 COPY ./scripts/* /scanoss/api/scripts/
-
 
 RUN cd /scanoss/api/scripts/ && \
     ./env-setup.sh prod -y
