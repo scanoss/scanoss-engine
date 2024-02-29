@@ -1,116 +1,85 @@
-# SCANOSS Docker Development Environment
-
+# SCANOSS Containerized Environment
 
 ## Introduction
 
+The SCANOSS Platform can be easily deployed as a Docker container, comprising essential software components and their dependencies:
 
-The Complete SCANOSS Platform is deployable as a Docker container including the following components:
+- [LDB](https://github.com/scanoss/ldb)
+- [Engine](https://github.com/scanoss/engine)
+- [API](https://github.com/scanoss/api.gob)
 
+## Quick Start
 
-* LDB
-* Minr
-* Engine
-* WAYUU
-* API
+To initiate SCANOSS using the sample Knowledge Base [test-kb](https://github.com/scanoss/test-kb), follow these steps:
 
+1. Clone this repository and execute the `start.sh` script.
 
-Files included in the package:
+    ```sh
+    git clone https://github.com/scanoss/scanoss-engine
+    cd scanoss-engine/
+    ./start.sh
+    ```
 
+    This script pulls a test Knowledge Base containing several example components and starts the SCANOSS container. The API is configured to listen on port 5443.
 
-* Dockerfile
-* mining_commands.sh
+2. Test your environment by running a scan request using the [Python CLI](https://github.com/scanoss/scanoss.py):
 
+    ```sh
+    curl -LO https://github.com/madler/zlib/raw/master/inflate.c
+    scanoss-py scan --apiurl http://localhost:5443/api/scan/direct inflate.c 
+    ```
 
-The Dockerfile contains the installation of each component and adds a convenience script to run mining of requested components into the KB. 
+## Customization
 
+Customization options are available through scripts and configuration files found under the `scripts` folder:
 
-The script mining_commands.sh file is added inside the Docker image.
+- `app-config-prod.json`: API Configuration
+- `env-setup.sh`: Custom OS and API setup
 
+## Usage Guide
 
-ATTN: This setup is not supported nor recommended for production environments and should only be used for testing purposes.
+1. Clone this repository or download and extract the repository source package.
 
+    ```sh
+    git clone https://github.com/scanoss/scanoss-engine
+    cd scanoss-engine/
+    ```
 
-## Installation guide
+2. Pull (or build) the container image:
 
+    To build the image, use the following command:
 
-### 1) Clone this repository or download and extract the repository source package.
+    ```sh
+    docker build -t scanoss-engine .
+    ```
 
+    This command creates an image named "scanoss-engine".
 
-```sh
-git clone https://github.com/scanoss/infra-test-docker
-cd infra-test-docker/
-```
+3. Run a container:
 
+    Once the image is built, run the container with all required components available out of the box.
 
-### 2) Build the Docker image
+    Ensure sufficient disk storage for mining required components. It's recommended to map volumes to the default destinations to reuse the generated Knowledge Base once built. Replace `<DATA_DIR>` with a local directory of the Docker host in the command below.
 
-In order to build the image, run the following command:
+    ```sh
+      docker run --rm \
+        -e SCANOSS_API_URL=http://localhost:5443/api \
+        -p 5443:5443 \
+        -v <DATA_DIR>:/var/lib/ldb \
+        -it scanoss-engine
+    ```
 
+    By default, the API is exposed at port 5443. The KB is internally located at `/var/lib/ldb/`. The environment variable `SCANOSS_API_URL` defines the base url for the source file url present in the output response.
 
-```sh
-docker build -t scanoss .
-```
+4. Test your environment:
 
-An image named "scanoss" will be created.
+    Once the container is running and mining is completed, query the API and run scans against the new Knowledge Base.
 
+    To verify the installation, scan a component from the mining list using the Python CLI:
 
-### 3) Run the Docker container
+    ```sh
+    curl -LO https://github.com/madler/zlib/raw/master/inflate.c
+    scanoss-py scan --apiurl http://localhost:5443/api/scan/direct inflate.c 
+    ```
 
-Once your image is built, you can run the container with all required components available out of the box.
-
-
-Please, verify you have sufficient disk storage to mine the required components. It’s recommended to map volumes to the default destinations to reuse the generated Knowledge Base once it is built. In the following command, replace <DATA_DIR> with a local directory of the Docker host.
-
-
-```sh
-sudo docker run --rm --name scanoss -v <DATA_DIR>:/var/lib/ldb/ -v <TMP_DIR>:/tmp -p 4443:4443 -d scanoss
-```
-
-
-By default, the API is exposed at the port 4443 and the KB is internally located at /var/lib/ldb/. Optionally, you may map the /tmp directory for debugging purposes by replacing <TMP_DIR>.
-
-
-### 4) Run the mining process
-
-
-Step into the running container and run the convenience script mining_commands.sh
-
-
-a) Open a bash terminal into the container:
-
-```sh
-docker exec -ti scanoss bash
-```
-
-
-b) Run the mining script
-
-```sh
-./mining_command.sh
-```
-
-At this step, you may find messages indicating the files that are being ignored due to file size limits. 
-
-```
-File size out of bound: /dev/shm/minr-27/folder/item
-```
-
-### 5) Test your environment
-
-When the container is up and running and mining is done, you will be able to query the API and run scans against the new Knowledge Base.
-
-
-To verify the installation, you can grab a component from the mining list and run a scan using the Python CLI, as shown in the following example:
-
-
-The scanning results will include matches to the mined component.
-
-
-## Docker-compose
-
-We also added a docker-compose definition of the SCANOSS service to ease disk space configurations. 
-
-Make sure to replace /data dir with big volumes.
-
-Use ```docker-compose up```as usual tTo run the composition.
-
+    The scanning results will include matches to the mined component.
