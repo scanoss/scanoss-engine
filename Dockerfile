@@ -1,4 +1,4 @@
-FROM debian:stable
+FROM debian:bookworm-slim
 
 RUN \
   DEBIAN_FRONTEND=noninteractive \
@@ -28,8 +28,6 @@ RUN curl -O http://security.debian.org/debian-security/pool/updates/main/o/opens
     dpkg -i libssl1.1_1.1.1n-0+deb11u5_amd64.deb
 
 WORKDIR /scanoss/ldb/
-
-COPY . .
 
 ENV SUDO_USER=root
 

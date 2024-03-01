@@ -3,7 +3,7 @@
 #
 # start.sh
 #
-# SCANOSS startup script
+# SCANOSS Startup Script
 # 
 # This program pulls the SCANOSS test-kb and runs the scanoss-engine container.
 #
@@ -24,13 +24,41 @@
 
 # Download test kb
 if [ ! -d "ldb" ]; then
+    # Minimum required disk space in bytes (45 GB)
+    MIN_REQUIRED_SPACE=$((45 * 1024 * 1024 * 1024))
+
+    # Check available disk space
+    available_space=$(df . | awk 'NR==2 {print $4}')
+
+    if [ "$available_space" -lt "$MIN_REQUIRED_SPACE" ]; then
+        echo "Insufficient disk space available. At least 45 GB required."
+        exit 1
+    fi
+
     curl -LO https://github.com/scanoss/test-kb/releases/download/v0.1.0/ldb.tar.xz
     tar -vaxf ldb.tar.xz
     rm ldb.tar.xz
 fi
 
+# Default to interactive mode
+MODE="-it"
+
+# Process command line options
+while getopts ":d" opt; do
+  case ${opt} in
+    d )
+      MODE="-d" ;;
+    \? )
+      echo "Invalid option: $OPTARG" 1>&2
+      exit 1 ;;
+    : )
+      echo "Invalid option: $OPTARG requires an argument" 1>&2
+      exit 1 ;;
+  esac
+done
+shift $((OPTIND -1))
+
 # Run SCANOSS container
-docker run --rm -p 5443:5443 \
-   -e SCANOSS_API_URL=http://localhost:5443/api \
+docker run --rm $MODE -p 8083:8083 \
    -v $(pwd)/ldb:/var/lib/ldb \
-   -it ghcr.io/scanoss/scanoss-engine
+   ghcr.io/scanoss/scanoss-engine

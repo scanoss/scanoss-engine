@@ -1,18 +1,14 @@
-# SCANOSS Engine
+# SCANOSS Platform: Containerized Environment
 
-A containerized environment for the SCANOSS Platform
-
-## Introduction
-
-The SCANOSS Platform can be easily deployed as a Docker container, comprising essential software components and their dependencies:
+The scanoss-engine repository offers a containerized environment, simplifying deployment with essential software components and dependencies encapsulated within a single Docker container. These components include:
 
 - [LDB](https://github.com/scanoss/ldb)
 - [Engine](https://github.com/scanoss/engine)
-- [API](https://github.com/scanoss/api.gob)
+- [API](https://github.com/scanoss/api.go)
 
-## Quick Start
+# Quick Start
 
-To initiate SCANOSS using the sample Knowledge Base [test-kb](https://github.com/scanoss/test-kb), follow these steps:
+To initiate SCANOSS using our sample Knowledge Base [test-kb](https://github.com/scanoss/test-kb), follow these steps:
 
 1. Clone this repository
 
@@ -29,26 +25,25 @@ To initiate SCANOSS using the sample Knowledge Base [test-kb](https://github.com
     
     Notes:
     - The example KB will be downloaded in the `./ldb` folder and the download will be skipped if the `ldb` folder exists. 
-    - The API is configured to listen on port 5443. 
+    - The API is configured to listen on port 8083. 
     - Please review the script for further reference.
 
 3. Test your environment by running a scan request using the [Python CLI](https://github.com/scanoss/scanoss.py):
 
+    From another terminal you can run a scan against the container. If the scan was successfull, you will receive the match output.
+    
     ```sh
-    curl -LO https://github.com/madler/zlib/raw/master/inflate.c
-    scanoss-py scan --apiurl http://localhost:5443/api/scan/direct inflate.c 
+    scanoss-py scan --apiurl http://localhost:8083/api/scan/direct test-data/
     ```
 
-    If the scan was successfull, you will receive the match output.
-
-## Customization
+# Customization
 
 Customization options are available through scripts and configuration files found under the `scripts` folder:
 
-- `app-config-prod.json`: API Configuration
-- `env-setup.sh`: Custom OS and API setup
+- `app-config-prod.json`: API Configuration. See [api.go](https://github.com/scanoss/api.go) for reference
+- `env-setup.sh`: Container-optimized API setup script.
 
-## Usage Guide
+# Building Your Container Image
 
 1. Clone this repository or download and extract the repository source package.
 
@@ -57,7 +52,7 @@ Customization options are available through scripts and configuration files foun
     cd scanoss-engine/
     ```
 
-2. Pull (or build) the container image:
+2. Build the container image:
 
     To build the image, use the following command:
 
@@ -75,23 +70,32 @@ Customization options are available through scripts and configuration files foun
 
     ```sh
       docker run --rm \
-        -e SCANOSS_API_URL=http://localhost:5443/api \
-        -p 5443:5443 \
+        -p 8083:8083 \
         -v <DATA_DIR>:/var/lib/ldb \
         -it scanoss-engine
     ```
 
-    By default, the API is exposed at port 5443. The KB is internally located at `/var/lib/ldb/`. The environment variable `SCANOSS_API_URL` defines the base url for the source file url present in the output response.
+    - The API is configured to listen on port 8083. 
+    
+    - The KB is internally located at `/var/lib/ldb/`. 
+    
+    - The configuration variable `ScanningURL` defines the base URL for the source file's URL present in the output response.
 
 4. Test your environment:
 
-    Once the container is running and mining is completed, query the API and run scans against the new Knowledge Base.
+    Once the container is running, query the API and run scans against the new Knowledge Base.
 
     To verify the installation, scan a component from the mining list using the Python CLI:
 
     ```sh
-    curl -LO https://github.com/madler/zlib/raw/master/inflate.c
-    scanoss-py scan --apiurl http://localhost:5443/api/scan/direct inflate.c 
+    
+    scanoss-py scan --apiurl http://localhost:8083/api/scan/direct test-data/
     ```
 
     The scanning results will include matches to the mined component.
+
+# License
+
+The Scanoss Platform is entirely released under the GPL 2.0 license. Please check the LICENSE file for more information.
+
+Copyright (C) 2018-2020 SCANOSS.COM
