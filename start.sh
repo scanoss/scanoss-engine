@@ -25,10 +25,11 @@
 # Download test kb
 if [ ! -d "ldb" ]; then
     # Minimum required disk space in bytes (45 GB)
-    MIN_REQUIRED_SPACE=$((45 * 1024 * 1024 * 1024))
+ # Minimum required disk space in bytes (45 GB)
+    MIN_REQUIRED_SPACE=$((45 * 1024 * 1024))
 
     # Check available disk space
-    available_space=$(df . | awk 'NR==2 {print $4}')
+    available_space=$(df -k . | awk 'NR==2 {print $4}')	
 
     if [ "$available_space" -lt "$MIN_REQUIRED_SPACE" ]; then
         echo "Insufficient disk space available. At least 45 GB required."
