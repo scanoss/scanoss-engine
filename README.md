@@ -6,7 +6,7 @@ The scanoss-engine repository offers a containerized environment, simplifying de
 - [Engine](https://github.com/scanoss/engine)
 - [API](https://github.com/scanoss/api.go)
 
-# Quick Start
+# Quick start
 
 To initiate SCANOSS using our sample Knowledge Base [test-kb](https://github.com/scanoss/test-kb), follow these steps:
 
@@ -43,7 +43,15 @@ Customization options are available through scripts and configuration files foun
 - `app-config-prod.json`: API Configuration. See [api.go](https://github.com/scanoss/api.go) for reference
 - `env-setup.sh`: Container-optimized API setup script.
 
-# Building Your Container Image
+# Building your own container image
+
+Follow these steps if you want to build your own image. 
+
+Pre-requisites:
+
+- A Knowledge Base. You may reuse the example KB downloaded in the [Quick Start](#quick-start) section or mine your own components following the [minr guide](https://github.com/scanoss/minr) and the [test kb](https://github.com/scanoss/test-kb/blob/master/util/kb-mine.sh) mining script. Ensure sufficient disk storage for mining required components. 
+
+Steps:
 
 1. Clone this repository or download and extract the repository source package.
 
@@ -66,18 +74,18 @@ Customization options are available through scripts and configuration files foun
 
     Once the image is built, run the container with all required components available out of the box.
 
-    Ensure sufficient disk storage for mining required components. It's recommended to map volumes to the default destinations to reuse the generated Knowledge Base once built. Replace `<DATA_DIR>` with a local directory of the Docker host in the command below.
+    Replace `<LDB_DATA_DIR>` with a local directory containing the Knowledge Base in the Docker host.
 
     ```sh
       docker run --rm \
         -p 8083:8083 \
-        -v <DATA_DIR>:/var/lib/ldb \
+        -v <LDB_DATA_DIR>:/var/lib/ldb \
         -it scanoss-engine
     ```
-
-    - The API is configured to listen on port 8083. 
     
-    - The KB is internally located at `/var/lib/ldb/`. 
+    - The API is configured to listen on port 8083.
+    
+    - The SCANOSS engine looks for databases in `/var/lib/ldb/`. 
     
     - The configuration variable `ScanningURL` defines the base URL for the source file's URL present in the output response.
 
