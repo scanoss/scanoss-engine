@@ -102,6 +102,13 @@ Steps:
 
     The scanning results will include matches to the mined component.
 
+
+Note: The Docker image is based on amd64 binaries. On non-amd64 processors you need to pass the option: `--platform linux/amd64` to the `docker run` command to enable compatibility:
+
+```sh
+docker run --platform linux/amd64 ...
+```
+
 # License
 
 The Scanoss Platform is entirely released under the GPL 2.0 license. Please check the LICENSE file for more information.
