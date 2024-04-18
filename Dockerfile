@@ -62,5 +62,9 @@ RUN export API_PKG_URL=$(curl -s https://api.github.com/repos/scanoss/api.go/rel
     ./env-setup.sh prod -y && \
     rm -rf /scanoss/api
 
+# Add Convenience Scripts/Tools
+
+COPY scripts/import.sh /scanoss/scripts/
+
 
 ENTRYPOINT ["bash","-c","/usr/local/bin/scanoss-go-api.sh"]
